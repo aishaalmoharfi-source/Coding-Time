@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Coding Time</title>
+  <style>
+    :root {
+      --bg-main: #05050a;
+      --bg-card: #0f172a;
+      --bg-editor: #020617;
+      --primary-color: #38bdf8;
+      --accent-color: #10b981;
+      --error-color: #f43f5e;
+      --text-main: #f8fafc;
+      --text-sub: #94a3b8;
+      --border-color: #1e293b;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Consolas', monospace;
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Background Animation Elements */
+    .matrix-bg {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      overflow: hidden;
+      z-index: -1;
+      opacity: 0.15;
+    }
+    .matrix-code {
+      position: absolute;
+      color: var(--primary-color);
+      font-size: 1rem;
+      white-space: nowrap;
+      animation: fall linear infinite;
+    }
+    @keyframes fall {
+      0% { transform: translateY(-100px); opacity: 0; }
+      50% { opacity: 1; }
+      100% { transform: translateY(105vh); opacity: 0; }
+    }
+
+    .screen {
+      display: none;
+      width: 100%;
+      max-width: 65rem;
+      padding: 1.5rem;
+      text-align: center;
+      z-index: 10;
+    }
+    .screen.active { display: block; }
+
+    /* Welcome Screen */
+    .welcome-card {
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--border-color);
+      padding: 3rem 2rem;
+      border-radius: 1rem;
+      box-shadow: 0 0 40px rgba(56, 189, 248, 0.1);
+    }
+    .site-title {
+      font-size: 4rem;
+      color: var(--primary-color);
+      font-weight: bold;
+      margin-bottom: 0.2rem;
+      text-shadow: 0 0 20px var(--primary-color);
+    }
+    .site-author {
+      font-size: 1.5rem;
+      color: var(--primary-color);
+      margin-bottom: 1.5rem;
+      letter-spacing: 3px;
+      font-weight: bold;
+      text-shadow: 0 0 12px var(--primary-color);
+    }
+    .site-subtitle {
+      font-size: 1.1rem;
+      color: var(--text-sub);
+      margin-bottom: 2rem;
+    }
+    
+    .user-setup {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+    .input-box {
+      background: var(--bg-editor);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 0.8rem 1.2rem;
+      font-size: 1.1rem;
+      border-radius: 0.5rem;
+      outline: none;
+      width: 100%;
+      max-width: 20rem;
+      text-align: center;
+      font-family: 'Consolas', monospace;
+    }
+    .input-box:focus { border-color: var(--primary-color); }
+
+    .color-picker-container {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      margin-bottom: 1.5rem;
+    }
+    .color-dot {
+      width: 2rem;
+      height: 2rem;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid #fff;
+      transition: transform 0.2s;
+    }
+    .color-dot:hover { transform: scale(1.2); }
+
+    .btn-main {
+      background: linear-gradient(135deg, var(--primary-color), #3b82f6);
+      color: #fff;
+      border: none;
+      padding: 0.9rem 2.5rem;
+      font-size: 1.2rem;
+      font-weight: bold;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+    }
+    .btn-main:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 25px var(--primary-color);
+    }
+
+    /* Grids & Cards */
+    h2 { margin-bottom: 2rem; color: var(--primary-color); font-size: 1.8rem; }
+    .options-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+      max-height: 60vh;
+      overflow-y: auto;
+      padding: 0.5rem;
+    }
+    .option-card {
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 1.8rem;
+      font-size: 1.1rem;
+      font-weight: bold;
+      border-radius: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .option-card:hover {
+      border-color: var(--primary-color);
+      background: rgba(56, 189, 248, 0.1);
+      transform: translateY(-3px);
+    }
+
+    .nav-buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 1.5rem;
+    }
+    .btn-secondary {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-sub);
+      padding: 0.6rem 1.5rem;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: all 0.2s;
+    }
+    .btn-secondary:hover {
+      color: var(--text-main);
+      border-color: var(--primary-color);
+    }
+
+    /* Typing Screen & Header */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      width: 100%;
+    }
+
+    /* تكبير شارة اسم المبرمج وتبريزها */
+    .user-badge {
+      font-size: 1.25rem;
+      color: var(--primary-color);
+      font-weight: bold;
+      background: rgba(15, 23, 42, 0.95);
+      padding: 0.6rem 1.6rem;
+      border-radius: 2rem;
+      border: 2px solid var(--primary-color);
+      box-shadow: 0 0 15px rgba(56, 189, 248, 0.25);
+      letter-spacing: 1px;
+    }
+
+    .stats-bar {
+      display: flex;
+      justify-content: space-around;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid var(--border-color);
+      padding: 0.75rem;
+      border-radius: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .stat-box { text-align: center; }
+    .stat-label { font-size: 0.75rem; color: var(--text-sub); }
+    .stat-val { font-size: 1.4rem; font-weight: bold; }
+    #wpm-val { color: var(--primary-color); }
+    #acc-val { color: var(--accent-color); }
+    #err-val { color: var(--error-color); }
+    #time-val { color: #f59e0b; }
+
+    .editor-container {
+      position: relative;
+      background-color: var(--bg-editor);
+      border: 1px solid var(--border-color);
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+      min-height: 12rem;
+      cursor: text;
+      text-align: left;
+    }
+    textarea {
+      position: absolute;
+      opacity: 0;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      cursor: text;
+      z-index: 10;
+    }
+    #code-display {
+      font-family: 'Consolas', monospace;
+      font-size: 1.15rem;
+      line-height: 1.8;
+      white-space: pre-wrap;
+      user-select: none;
+    }
+    .char-correct { color: #4ade80; background-color: rgba(74, 222, 128, 0.1); }
+    .char-incorrect { color: var(--error-color); background-color: rgba(244, 63, 94, 0.2); text-decoration: underline; }
+    .char-current { background-color: var(--primary-color); color: #000; }
+
+    /* Results Screen */
+    .result-card {
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid var(--border-color);
+      padding: 2.5rem;
+      border-radius: 1rem;
+      max-width: 35rem;
+      margin: 0 auto;
+    }
+    .progress-bar-container {
+      background: var(--border-color);
+      border-radius: 1rem;
+      height: 1.5rem;
+      width: 100%;
+      margin: 1.5rem 0;
+      overflow: hidden;
+      position: relative;
+    }
+    .progress-bar-fill {
+      background: linear-gradient(90deg, #10b981, var(--primary-color));
+      height: 100%;
+      width: 0%;
+      transition: width 0.5s ease;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Background Animated Code Elements -->
+  <div class="matrix-bg" id="matrix-bg"></div>
+
+  <!-- 1. Welcome Screen -->
+  <div id="welcome-screen" class="screen active">
+    <div class="welcome-card">
+      <h1 class="site-title">&lt;Coding Time&gt;</h1>
+      <div class="site-author">By Aishah</div>
+      <p class="site-subtitle" id="welcome-greeting">Master your programming speed, syntax, and accuracy.</p>
+      
+      <div class="user-setup">
+        <input type="text" id="username-input" class="input-box" placeholder="Enter your name..." value="Aishah">
+        <div style="font-size: 0.9rem; color: var(--text-sub); margin-top: 0.5rem;">Choose Theme Color:</div>
+        <div class="color-picker-container">
+          <div class="color-dot" style="background: #38bdf8;" onclick="setTheme('#38bdf8')"></div>
+          <div class="color-dot" style="background: #10b981;" onclick="setTheme('#10b981')"></div>
+          <div class="color-dot" style="background: #a855f7;" onclick="setTheme('#a855f7')"></div>
+          <div class="color-dot" style="background: #ec4899;" onclick="setTheme('#ec4899')"></div>
+          <div class="color-dot" style="background: #f59e0b;" onclick="setTheme('#f59e0b')"></div>
+        </div>
+      </div>
+
+      <button class="btn-main" onclick="goToLanguages()">START NOW</button>
+    </div>
+  </div>
+
+  <!-- 2. Language Selection Screen -->
+  <div id="language-screen" class="screen">
+    <header style="margin-bottom: 1rem;">
+      <button class="btn-secondary" onclick="goToHome()">← Home</button>
+      <div class="user-badge" id="badge-lang">Programmer: Aishah</div>
+    </header>
+    <h2>Select Programming Language</h2>
+    <div class="options-grid" id="language-grid"></div>
+  </div>
+
+  <!-- 3. Subject Selection Screen -->
+  <div id="subject-screen" class="screen">
+    <header style="margin-bottom: 1rem;">
+      <button class="btn-secondary" onclick="goToLanguages()">← Back to Languages</button>
+      <div class="user-badge" id="badge-subj">Programmer: Aishah</div>
+      <button class="btn-secondary" onclick="goToHome()">Home</button>
+    </header>
+    <h2 id="lang-title-header">Select Subject</h2>
+    <div class="options-grid" id="subject-grid"></div>
+  </div>
+
+  <!-- 4. Lessons Selection Screen -->
+  <div id="lesson-select-screen" class="screen">
+    <header style="margin-bottom: 1rem;">
+      <button class="btn-secondary" onclick="goToSubjects()">← Back to Subjects</button>
+      <div class="user-badge" id="badge-less">Programmer: Aishah</div>
+      <button class="btn-secondary" onclick="goToHome()">Home</button>
+    </header>
+    <h2 id="subject-title-header">Select Lesson</h2>
+    <div class="options-grid" id="lesson-grid"></div>
+  </div>
+
+  <!-- 5. Typing Screen -->
+  <div id="typing-screen" class="screen">
+    <header>
+      <button class="btn-secondary" onclick="goToLessonsList()">← Lessons</button>
+      <div class="user-badge" id="badge-typing">Programmer: Aishah</div>
+      <h3 id="lesson-title-header" style="color: var(--primary-color);">Lesson</h3>
+      <button class="btn-secondary" onclick="goToHome()">Home</button>
+    </header>
+
+    <main>
+      <div class="stats-bar">
+        <div class="stat-box">
+          <div class="stat-label">WPM</div>
+          <div id="wpm-val" class="stat-val">0</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">ACCURACY</div>
+          <div id="acc-val" class="stat-val">100%</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">ERRORS</div>
+          <div id="err-val" class="stat-val">0</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">TIME</div>
+          <div id="time-val" class="stat-val">0s</div>
+        </div>
+      </div>
+
+      <div class="editor-container" onclick="focusInput()">
+        <textarea id="hidden-input" oninput="handleInput()" onkeydown="handleKeyDown(event)"></textarea>
+        <div dir="ltr" id="code-display"></div>
+        <div class="notice" style="color: var(--text-sub); font-size: 0.8rem; margin-top: 1rem;">Click here and start typing...</div>
+      </div>
+    </main>
+  </div>
+
+  <!-- 6. Lesson Complete Screen -->
+  <div id="complete-screen" class="screen">
+    <div class="result-card">
+      <h2>Lesson Completed! 🎉</h2>
+      <p id="completion-stats" style="margin-bottom: 1rem; color: var(--text-sub);"></p>
+      <h3>Subject Progress: <span id="progress-percentage">0%</span></h3>
+      <div class="progress-bar-container">
+        <div class="progress-bar-fill" id="progress-fill"></div>
+      </div>
+      <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 2rem; flex-wrap: wrap;">
+        <button class="btn-main" onclick="nextLesson()">Next Lesson →</button>
+        <button class="btn-secondary" onclick="goToLessonsList()">Lessons List</button>
+        <button class="btn-secondary" onclick="goToHome()">Home</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function setTheme(color) {
+      document.documentElement.style.setProperty('--primary-color', color);
+    }
+
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playKeySound() {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(600 + Math.random() * 200, audioCtx.currentTime);
+      gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.05);
+    }
+
+    function playErrorSound() {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+      osc.frequency.linearRampToValueAtTime(100, audioCtx.currentTime + 0.15);
+      gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.15);
+    }
+
+    const codeSnippetsPool = [
+      "public static void main(String[] args)", "def binary_search(arr, target):",
+      "vector<int> nums = {1, 2, 3};", "function updateScreen() {",
+      "import java.util.ArrayList;", "while (low <= high) {",
+      "console.log('Coding Time');", "return result;"
+    ];
+    const bgContainer = document.getElementById("matrix-bg");
+    for (let i = 0; i < 15; i++) {
+      const div = document.createElement("div");
+      div.className = "matrix-code";
+      div.innerText = codeSnippetsPool[Math.floor(Math.random() * codeSnippetsPool.length)];
+      div.style.left = `${Math.random() * 90}%`;
+      div.style.animationDuration = `${6 + Math.random() * 8}s`;
+      div.style.animationDelay = `${Math.random() * 5}s`;
+      bgContainer.appendChild(div);
+    }
+
+    const database = {
+      Java: [
+        {
+          subjectName: "Basics & Syntax",
+          lessons: [
+            { title: "Lesson 1: Hello World", code: "public class Main {\n    public static void main(String[] args) {\n        System.out.println(\"Hello World\");\n    }\n}" },
+            { title: "Lesson 2: Primitive Types", code: "int id = 101;\ndouble price = 19.99;\nchar grade = 'A';\nboolean active = true;" },
+            { title: "Lesson 3: String Operations", code: "String firstName = \"Aishah\";\nString lastName = \"Developer\";\nString fullName = firstName + \" \" + lastName;\nSystem.out.println(fullName.length());" }
+          ]
+        },
+        {
+          subjectName: "Control Flow & Conditions",
+          lessons: [
+            { title: "Lesson 1: If-Else Statements", code: "int score = 85;\nif (score >= 90) {\n    System.out.println(\"A\");\n} else {\n    System.out.println(\"B\");\n}" },
+            { title: "Lesson 2: Switch Case", code: "int day = 3;\nswitch(day) {\n    case 1: System.out.println(\"Monday\"); break;\n    default: System.out.println(\"Other\");\n}" }
+          ]
+        },
+        {
+          subjectName: "Loops - For Loop",
+          lessons: [
+            { title: "Lesson 1: Standard For Loop", code: "for(int i = 1; i <= 5; i++) {\n    System.out.println(\"Count: \" + i);\n}" },
+            { title: "Lesson 2: Nested For Loop", code: "for(int i = 1; i <= 3; i++) {\n    for(int j = 1; j <= 3; j++) {\n        System.out.println(i + \",\" + j);\n    }\n}" }
+          ]
+        },
+        {
+          subjectName: "Loops - While & Do-While",
+          lessons: [
+            { title: "Lesson 1: While Loop", code: "int count = 3;\nwhile(count > 0) {\n    System.out.println(count);\n    count--;\n}" },
+            { title: "Lesson 2: Do-While Loop", code: "int x = 1;\ndo {\n    System.out.println(x);\n    x++;\n} while(x <= 3);" }
+          ]
+        },
+        {
+          subjectName: "Data Structures - Arrays",
+          lessons: [
+            { title: "Lesson 1: 1D Array Declaration", code: "int[] numbers = {10, 20, 30, 40, 50};\nSystem.out.println(numbers[0]);" },
+            { title: "Lesson 2: 2D Matrix Array", code: "int[][] matrix = {\n    {1, 2, 3},\n    {4, 5, 6}\n};\nSystem.out.println(matrix[0][1]);" }
+          ]
+        },
+        {
+          subjectName: "Data Structures - ArrayList",
+          lessons: [
+            { title: "Lesson 1: ArrayList Add/Get", code: "import java.util.ArrayList;\nArrayList<String> fruits = new ArrayList<>();\nfruits.add(\"Apple\");\nfruits.add(\"Banana\");" },
+            { title: "Lesson 2: ArrayList Remove/Size", code: "import java.util.ArrayList;\nArrayList<Integer> nums = new ArrayList<>();\nnums.add(10);\nnums.remove(0);\nSystem.out.println(nums.size());" }
+          ]
+        },
+        {
+          subjectName: "Data Structures - Stacks",
+          lessons: [
+            { title: "Lesson 1: Stack Push & Pop", code: "import java.util.Stack;\nStack<String> stack = new Stack<>();\nstack.push(\"First\");\nstack.push(\"Second\");\nstack.pop();" }
+          ]
+        },
+        {
+          subjectName: "Data Structures - Queues",
+          lessons: [
+            { title: "Lesson 1: Queue Add & Poll", code: "import java.util.Queue;\nimport java.util.LinkedList;\nQueue<String> queue = new LinkedList<>();\nqueue.add(\"Task1\");\nqueue.poll();" }
+          ]
+        },
+        {
+          subjectName: "Data Structures - Linked Lists",
+          lessons: [
+            { title: "Lesson 1: LinkedList Operations", code: "import java.util.LinkedList;\nLinkedList<String> list = new LinkedList<>();\nlist.addFirst(\"Start\");\nlist.addLast(\"End\");" }
+          ]
+        },
+        {
+          subjectName: "Data Structures - Binary Trees",
+          lessons: [
+            { title: "Lesson 1: Node Structure", code: "class Node {\n    int val;\n    Node left, right;\n    Node(int item) {\n        val = item;\n        left = right = null;\n    }\n}" }
+          ]
+        },
+        {
+          subjectName: "Object-Oriented Programming (OOP)",
+          lessons: [
+            { title: "Lesson 1: Class & Object", code: "class Car {\n    String model;\n    int year;\n}\nCar myCar = new Car();" },
+            { title: "Lesson 2: Inheritance", code: "class Animal {\n    void eat() { System.out.println(\"Eating\"); }\n}\nclass Dog extends Animal {}" }
+          ]
+        }
+      ],
+      JavaScript: [
+        {
+          subjectName: "Basics & Variables",
+          lessons: [
+            { title: "Lesson 1: Console Log", code: "console.log('Welcome to Coding Time');\nlet appName = 'CodeJS';" },
+            { title: "Lesson 2: Const and Let", code: "const API_KEY = 'xyz123';\nlet count = 10;\ncount++;" }
+          ]
+        },
+        {
+          subjectName: "Functions",
+          lessons: [
+            { title: "Lesson 1: Standard Functions", code: "function calculateSum(a, b) {\n    return a + b;\n}" },
+            { title: "Lesson 2: Arrow Functions", code: "const multiply = (x, y) => x * y;\nconsole.log(multiply(4, 5));" }
+          ]
+        },
+        {
+          subjectName: "Arrays",
+          lessons: [
+            { title: "Lesson 1: Array Methods", code: "const colors = ['red', 'green', 'blue'];\ncolors.push('yellow');\ncolors.forEach(c => console.log(c));" }
+          ]
+        },
+        {
+          subjectName: "Objects",
+          lessons: [
+            { title: "Lesson 1: Object Literals", code: "const user = {\n    name: 'Aishah',\n    role: 'Developer',\n    active: true\n};" }
+          ]
+        },
+        {
+          subjectName: "DOM Manipulation",
+          lessons: [
+            { title: "Lesson 1: Query Selector", code: "const btn = document.querySelector('#submit-btn');\nbtn.style.backgroundColor = 'blue';" },
+            { title: "Lesson 2: Event Listeners", code: "document.addEventListener('click', (e) => {\n    console.log('Clicked at:', e.clientX);\n});" }
+          ]
+        }
+      ],
+      Python: [
+        {
+          subjectName: "Basics & IO",
+          lessons: [
+            { title: "Lesson 1: Print & Variables", code: "name = \"Aishah\"\nscore = 98.5\nprint(f\"User: {name}, Score: {score}\")" },
+            { title: "Lesson 2: If-Else Statements", code: "age = 20\nif age >= 18:\n    print(\"Adult\")\nelse:\n    print(\"Minor\")" }
+          ]
+        },
+        {
+          subjectName: "Loops",
+          lessons: [
+            { title: "Lesson 1: For Loop Range", code: "for i in range(1, 6):\n    print(f\"Number: {i}\")" },
+            { title: "Lesson 2: While Loop", code: "x = 5\nwhile x > 0:\n    print(x)\n    x -= 1" }
+          ]
+        },
+        {
+          subjectName: "Functions & Algorithms",
+          lessons: [
+            { title: "Lesson 1: Def Functions", code: "def calculate_gpa(grades):\n    return sum(grades) / len(grades)" },
+            { title: "Lesson 2: Binary Search", code: "def binary_search(arr, target):\n    low, high = 0, len(arr) - 1\n    while low <= high:\n        mid = (low + high) // 2\n        if arr[mid] == target: return mid" }
+          ]
+        }
+      ],
+      "C++": [
+        {
+          subjectName: "Basics & IO",
+          lessons: [
+            { title: "Lesson 1: Hello World", code: "#include <iostream>\nusing namespace std;\nint main() {\n    cout << \"Hello C++ World\" << endl;\n    return 0;\n}" },
+            { title: "Lesson 2: Cin & Cout", code: "#include <iostream>\nusing namespace std;\nint main() {\n    int age;\n    cin >> age;\n    cout << \"Age: \" << age;\n}" }
+          ]
+        },
+        {
+          subjectName: "Control Structures",
+          lessons: [
+            { title: "Lesson 1: If-Else", code: "#include <iostream>\nusing namespace std;\nint main() {\n    int x = 10;\n    if(x > 5) cout << \"Greater\";\n}" },
+            { title: "Lesson 2: For Loop", code: "#include <iostream>\nusing namespace std;\nint main() {\n    for(int i=0; i<5; i++) cout << i;\n}" }
+          ]
+        },
+        {
+          subjectName: "Pointers & Arrays",
+          lessons: [
+            { title: "Lesson 1: Pointers Basics", code: "#include <iostream>\nusing namespace std;\nint main() {\n    int val = 20;\n    int* ptr = &val;\n    cout << *ptr;\n}" }
+          ]
+        }
+      ]
+    };
+
+    let currentLang = "";
+    let currentSubjectIndex = 0;
+    let currentLessonIndex = 0;
+    let completedLessons = {};
+    let userName = "Aishah";
+
+    let currentSnippet = "";
+    let startTime = null;
+    let timerInterval = null;
+    let totalTyped = 0;
+    let errorsCount = 0;
+    let lastTypedLength = 0;
+
+    const hiddenInput = document.getElementById("hidden-input");
+    const codeDisplay = document.getElementById("code-display");
+
+    function showScreen(id) {
+      document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+      document.getElementById(id).classList.add("active");
+    }
+
+    function updateBadges() {
+      const nameInput = document.getElementById("username-input");
+      if (nameInput && nameInput.value.trim() !== "") {
+        userName = nameInput.value.trim();
+      }
+      const badgeText = `Programmer: ${userName}`;
+      document.getElementById("badge-lang").innerText = badgeText;
+      document.getElementById("badge-subj").innerText = badgeText;
+      document.getElementById("badge-less").innerText = badgeText;
+      document.getElementById("badge-typing").innerText = badgeText;
+    }
+
+    function goToHome() {
+      const nameInput = document.getElementById("username-input");
+      if (nameInput && nameInput.value.trim() !== "") {
+        userName = nameInput.value.trim();
+        document.getElementById("welcome-greeting").innerText = `Welcome back, ${userName}! Master your programming speed.`;
+      }
+      showScreen("welcome-screen");
+    }
+
+    function goToLanguages() {
+      updateBadges();
+      const grid = document.getElementById("language-grid");
+      grid.innerHTML = "";
+      
+      const orderedLangs = ["Java", "JavaScript", "Python", "C++"];
+      
+      orderedLangs.forEach(lang => {
+        if (!database[lang]) return;
+        const btn = document.createElement("button");
+        btn.className = "option-card";
+        btn.innerText = lang;
+        btn.onclick = () => selectLanguage(lang);
+        grid.appendChild(btn);
+      });
+      showScreen("language-screen");
+    }
+
+    function selectLanguage(lang) {
+      updateBadges();
+      currentLang = lang;
+      const grid = document.getElementById("subject-grid");
+      grid.innerHTML = "";
+      document.getElementById("lang-title-header").innerText = `${lang} - Subjects`;
+
+      if (!completedLessons[lang]) completedLessons[lang] = {};
+
+      database[lang].forEach((subj, sIdx) => {
+        if (!completedLessons[lang][sIdx]) completedLessons[lang][sIdx] = [];
+        const compCount = completedLessons[lang][sIdx].length;
+        const total = subj.lessons.length;
+        const pct = Math.round((compCount / total) * 100);
+
+        const btn = document.createElement("button");
+        btn.className = "option-card";
+        btn.innerHTML = `${subj.subjectName}<br><span style="font-size:0.9rem; color:var(--text-sub);">Progress: ${pct}%</span>`;
+        btn.onclick = () => selectSubject(sIdx);
+        grid.appendChild(btn);
+      });
+      showScreen("subject-screen");
+    }
+
+    function goToSubjects() { selectLanguage(currentLang); }
+
+    function selectSubject(sIdx) {
+      updateBadges();
+      currentSubjectIndex = sIdx;
+      const subject = database[currentLang][sIdx];
+      const grid = document.getElementById("lesson-grid");
+      grid.innerHTML = "";
+      document.getElementById("subject-title-header").innerText = `${subject.subjectName} - Lessons`;
+
+      subject.lessons.forEach((les, lIdx) => {
+        const isDone = completedLessons[currentLang][sIdx].includes(lIdx);
+        const btn = document.createElement("button");
+        btn.className = "option-card";
+        btn.style.borderColor = isDone ? "var(--accent-color)" : "var(--border-color)";
+        btn.innerHTML = `${les.title} ${isDone ? '✅' : '🔓'}`;
+        btn.onclick = () => startLesson(sIdx, lIdx);
+        grid.appendChild(btn);
+      });
+      showScreen("lesson-select-screen");
+    }
+
+    function goToLessonsList() { selectSubject(currentSubjectIndex); }
+
+    function startLesson(sIdx, lIdx) {
+      updateBadges();
+      currentSubjectIndex = sIdx;
+      currentLessonIndex = lIdx;
+      const lesson = database[currentLang][sIdx].lessons[lIdx];
+      currentSnippet = lesson.code;
+      
+      document.getElementById("lesson-title-header").innerText = lesson.title;
+      showScreen("typing-screen");
+      resetTest();
+    }
+
+    function resetTest() {
+      if (!hiddenInput) return;
+      hiddenInput.value = "";
+      clearInterval(timerInterval);
+      startTime = null;
+      totalTyped = 0;
+      errorsCount = 0;
+      lastTypedLength = 0;
+      document.getElementById("wpm-val").innerText = "0";
+      document.getElementById("acc-val").innerText = "100%";
+      document.getElementById("err-val").innerText = "0";
+      document.getElementById("time-val").innerText = "0s";
+      renderCode();
+    }
+
+    function renderCode() {
+      if (!hiddenInput || !codeDisplay) return;
+      const typed = hiddenInput.value;
+      let html = "";
+      let currentErrors = 0;
+
+      for (let i = 0; i < currentSnippet.length; i++) {
+        const char = currentSnippet[i];
+        const typedChar = typed[i];
+
+        if (typedChar == null) {
+          if (i === typed.length) {
+            html += `<span class="char-current">${char === '\n' ? '↵\n' : char}</span>`;
+          } else {
+            html += `<span>${char}</span>`;
+          }
+        } else if (typedChar === char) {
+          html += `<span class="char-correct">${char}</span>`;
+        } else {
+          currentErrors++;
+          html += `<span class="char-incorrect">${char}</span>`;
+        }
+      }
+
+      codeDisplay.innerHTML = html;
+      errorsCount = currentErrors;
+      totalTyped = typed.length;
+      document.getElementById("err-val").innerText = errorsCount;
+
+      if (typed.length > lastTypedLength) {
+        const lastChar = typed[typed.length - 1];
+        const expectedChar = currentSnippet[typed.length - 1];
+        if (lastChar === expectedChar) {
+          playKeySound();
+        } else {
+          playErrorSound();
+        }
+      }
+      lastTypedLength = typed.length;
+    }
+
+    function handleInput() {
+      if (!startTime && hiddenInput.value.length > 0) {
+        startTime = new Date();
+        timerInterval = setInterval(updateStats, 1000);
+      }
+
+      renderCode();
+
+      if (hiddenInput.value.length >= currentSnippet.length) {
+        clearInterval(timerInterval);
+        updateStats();
+        finishLesson();
+      }
+    }
+
+    function handleKeyDown(e) {
+      if (e.key === "Tab") {
+        e.preventDefault();
+        hiddenInput.value += "    ";
+        handleInput();
+      }
+    }
+
+    function updateStats() {
+      if (!startTime) return;
+      const elapsedSeconds = Math.floor((new Date() - startTime) / 1000);
+      document.getElementById("time-val").innerText = `${elapsedSeconds}s`;
+
+      const minutes = elapsedSeconds / 60 || 1 / 60;
+      const words = totalTyped / 5;
+      const wpm = Math.round(words / minutes);
+      document.getElementById("wpm-val").innerText = Math.max(0, wpm);
+
+      const accuracy = totalTyped > 0 ? Math.max(0, Math.round(((totalTyped - errorsCount) / totalTyped) * 100)) : 100;
+      document.getElementById("acc-val").innerText = `${accuracy}%`;
+    }
+
+    function finishLesson() {
+      if (!completedLessons[currentLang][currentSubjectIndex].includes(currentLessonIndex)) {
+        completedLessons[currentLang][currentSubjectIndex].push(currentLessonIndex);
+      }
+
+      const subject = database[currentLang][currentSubjectIndex];
+      const completedCount = completedLessons[currentLang][currentSubjectIndex].length;
+      const totalCount = subject.lessons.length;
+      const pct = Math.round((completedCount / totalCount) * 100);
+
+      document.getElementById("completion-stats").innerText = `Great job ${userName}! WPM: ${document.getElementById("wpm-val").innerText} | Accuracy: ${document.getElementById("acc-val").innerText} | Errors: ${errorsCount}`;
+      document.getElementById("progress-percentage").innerText = `${pct}%`;
+      document.getElementById("progress-fill").style.width = `${pct}%`;
+
+      showScreen("complete-screen");
+    }
+
+    function nextLesson() {
+      const subject = database[currentLang][currentSubjectIndex];
+      if (currentLessonIndex + 1 < subject.lessons.length) {
+        startLesson(currentSubjectIndex, currentLessonIndex + 1);
+      } else {
+        alert("You have completed all lessons in this subject!");
+        selectSubject(currentSubjectIndex);
+      }
+    }
+
+    function focusInput() {
+      if (hiddenInput) hiddenInput.focus();
+    }
+  </script>
+</body>
+</html>
