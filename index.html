@@ -3,7 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Coding Time</title>
+  <!-- Google SEO Meta Tags -->
+  <title>Coding Time - Master Coding Speed & Syntax</title>
+  <meta name="description" content="Coding Time by Aishah - An interactive programming platform for computer science students to practice typing and speed across Java, Python, C++, JavaScript, Go, Bash, YAML, and SQL.">
+  <meta name="keywords" content="Coding Time, Aishah, Programming Typing, Java, Python, C++, JavaScript, Go, Bash, SQL, SEU">
+  <meta name="author" content="Aishah">
+  
   <style>
     :root {
       --bg-main: #05050a;
@@ -758,7 +763,7 @@
           subjectName: "Database Queries & DDL",
           lessons: [
             { title: "Lesson 1: Select Statements", code: "SELECT id, username, email\nFROM users\nWHERE status = 'ACTIVE'\nORDER BY created_at DESC;", output: "Query OK (3 rows returned)" },
-            { title: "Lesson 2: Joins & Aggregations", code: "SELECT u.name, COUNT(o.id) as total_orders\nFROM users u\nJOIN orders o ON u.id = o.user_id\nGROUP BY u.name;", output: "+--------+--------------+\n| name   | total_orders |\n+--------+--------------+\n| Aishah |           12 |\n+--------+--------------+" }
+            { title: "Lesson 2: Joins & Aggregations", code: "SELECT u.name, COUNT(o.id) as total_orders\nFROM users u\nJOIN orders o ON u.id = o.user_id\nGROUP BY u.name;", output: "+--------+--------------+\n| name   | total_orders |\n+--------+--------------+" }
           ]
         }
       ]
@@ -1021,7 +1026,7 @@
 
     function finishLesson() {
       if (!completedLessons[currentLang][currentSubjectIndex].includes(currentLessonIndex)) {
-        completedLessons[currentLang][currentSubjectIndex].push(currentLessonIndex);
+        completedLessons[currentLang][currentSubjectIndex].push(completedLessonIndex);
       }
 
       const subject = database[currentLang][currentSubjectIndex];
