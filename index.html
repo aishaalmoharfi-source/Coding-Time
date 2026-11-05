@@ -56,7 +56,7 @@
     .screen {
       display: none;
       width: 100%;
-      max-width: 65rem;
+      max-width: 68rem;
       padding: 1.5rem;
       text-align: center;
       z-index: 10;
@@ -176,11 +176,6 @@
       transform: translateY(-3px);
     }
 
-    .nav-buttons {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 1.5rem;
-    }
     .btn-secondary {
       background: transparent;
       border: 1px solid var(--border-color);
@@ -205,7 +200,6 @@
       width: 100%;
     }
 
-    /* تكبير شارة اسم المبرمج وتبريزها */
     .user-badge {
       font-size: 1.25rem;
       color: var(--primary-color);
@@ -235,6 +229,21 @@
     #err-val { color: var(--error-color); }
     #time-val { color: #f59e0b; }
 
+    /* Editor Layout with Side Output Drawer */
+    .editor-layout {
+      display: flex;
+      gap: 1rem;
+      position: relative;
+      align-items: flex-start;
+    }
+
+    .editor-main-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
     .editor-container {
       position: relative;
       background-color: var(--bg-editor);
@@ -257,12 +266,81 @@
       font-family: 'Consolas', monospace;
       font-size: 1.15rem;
       line-height: 1.8;
-      white-space: pre-wrap;
+      white-space: pre;
       user-select: none;
     }
     .char-correct { color: #4ade80; background-color: rgba(74, 222, 128, 0.1); }
     .char-incorrect { color: var(--error-color); background-color: rgba(244, 63, 94, 0.2); text-decoration: underline; }
     .char-current { background-color: var(--primary-color); color: #000; }
+
+    /* Output Action Button */
+    .btn-output-action {
+      background: var(--border-color);
+      color: var(--text-sub);
+      border: 1px solid var(--border-color);
+      padding: 0.8rem 2rem;
+      font-size: 1.1rem;
+      font-weight: bold;
+      border-radius: 0.5rem;
+      cursor: not-allowed;
+      transition: all 0.3s;
+      font-family: 'Consolas', monospace;
+      width: 100%;
+    }
+    .btn-output-action.ready {
+      background: linear-gradient(135deg, var(--accent-color), #059669);
+      color: #fff;
+      cursor: pointer;
+      border-color: var(--accent-color);
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+      animation: pulse-glow 1.5s infinite;
+    }
+    @keyframes pulse-glow {
+      0% { transform: scale(1); box-shadow: 0 0 10px rgba(16, 185, 129, 0.4); }
+      50% { transform: scale(1.02); box-shadow: 0 0 25px rgba(16, 185, 129, 0.8); }
+      100% { transform: scale(1); box-shadow: 0 0 10px rgba(16, 185, 129, 0.4); }
+    }
+
+    /* Side Output Panel (Drawer) */
+    .output-drawer {
+      width: 0;
+      overflow: hidden;
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid transparent;
+      border-radius: 0.75rem;
+      transition: all 0.4s ease;
+      text-align: left;
+      padding: 0;
+      opacity: 0;
+    }
+    .output-drawer.open {
+      width: 22rem;
+      padding: 1.2rem;
+      border-color: var(--accent-color);
+      opacity: 1;
+      box-shadow: -5px 0 25px rgba(0, 0, 0, 0.5);
+    }
+    .output-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 0.5rem;
+      color: var(--accent-color);
+      font-weight: bold;
+    }
+    .output-content {
+      font-family: 'Consolas', monospace;
+      font-size: 0.95rem;
+      color: #38bdf8;
+      background: var(--bg-editor);
+      padding: 1rem;
+      border-radius: 0.5rem;
+      min-height: 8rem;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
 
     /* Results Screen */
     .result-card {
@@ -379,10 +457,32 @@
         </div>
       </div>
 
-      <div class="editor-container" onclick="focusInput()">
-        <textarea id="hidden-input" oninput="handleInput()" onkeydown="handleKeyDown(event)"></textarea>
-        <div dir="ltr" id="code-display"></div>
-        <div class="notice" style="color: var(--text-sub); font-size: 0.8rem; margin-top: 1rem;">Click here and start typing...</div>
+      <div class="editor-layout">
+        <div class="editor-main-area">
+          <div class="editor-container" onclick="focusInput()">
+            <textarea id="hidden-input" oninput="handleInput()" onkeydown="handleKeyDown(event)"></textarea>
+            <div dir="ltr" id="code-display"></div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
+              <div style="color: var(--text-sub); font-size: 0.8rem;">Click here and start typing...</div>
+              <div style="background: rgba(56, 189, 248, 0.1); border: 1px solid var(--primary-color); color: var(--primary-color); padding: 0.2rem 0.6rem; border-radius: 0.4rem; font-size: 0.8rem; font-weight: bold;">💡 Press [ Tab ] for Indentation / New Line</div>
+            </div>
+          </div>
+          
+          <!-- Output Button & Next Action Button -->
+          <div style="display: flex; gap: 1rem;">
+            <button id="output-btn" class="btn-output-action" onclick="toggleOutput()">Output (Complete Lesson First)</button>
+            <button id="next-lesson-btn" class="btn-main" style="display: none; padding: 0.8rem 2rem; font-size: 1.1rem;" onclick="finishLesson()">🎉 View Celebration</button>
+          </div>
+        </div>
+
+        <!-- Side Output Panel -->
+        <div id="output-drawer" class="output-drawer">
+          <div class="output-header">
+            <span>&gt; Code Output</span>
+            <button onclick="toggleOutput()" style="background:none; border:none; color:var(--text-sub); cursor:pointer; font-size:1rem;">✕</button>
+          </div>
+          <div id="output-text" class="output-content">Complete the code typing to unlock output.</div>
+        </div>
       </div>
     </main>
   </div>
@@ -397,7 +497,7 @@
         <div class="progress-bar-fill" id="progress-fill"></div>
       </div>
       <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 2rem; flex-wrap: wrap;">
-        <button class="btn-main" onclick="nextLesson()">Next Lesson →</button>
+        <button class="btn-main" id="commit-btn" onclick="nextLesson()">Commit changes →</button>
         <button class="btn-secondary" onclick="goToLessonsList()">Lessons List</button>
         <button class="btn-secondary" onclick="goToHome()">Home</button>
       </div>
@@ -443,7 +543,7 @@
       "public static void main(String[] args)", "def binary_search(arr, target):",
       "vector<int> nums = {1, 2, 3};", "function updateScreen() {",
       "import java.util.ArrayList;", "while (low <= high) {",
-      "console.log('Coding Time');", "return result;"
+      "console.log('Coding Time');", "SELECT * FROM users;"
     ];
     const bgContainer = document.getElementById("matrix-bg");
     for (let i = 0; i < 15; i++) {
@@ -461,75 +561,75 @@
         {
           subjectName: "Basics & Syntax",
           lessons: [
-            { title: "Lesson 1: Hello World", code: "public class Main {\n    public static void main(String[] args) {\n        System.out.println(\"Hello World\");\n    }\n}" },
-            { title: "Lesson 2: Primitive Types", code: "int id = 101;\ndouble price = 19.99;\nchar grade = 'A';\nboolean active = true;" },
-            { title: "Lesson 3: String Operations", code: "String firstName = \"Aishah\";\nString lastName = \"Developer\";\nString fullName = firstName + \" \" + lastName;\nSystem.out.println(fullName.length());" }
+            { title: "Lesson 1: Hello World", code: "public class Main {\n    public static void main(String[] args) {\n        System.out.println(\"Hello World\");\n    }\n}", output: "Hello World" },
+            { title: "Lesson 2: Primitive Types", code: "int id = 101;\ndouble price = 19.99;\nchar grade = 'A';\nboolean active = true;", output: "ID: 101, Price: 19.99, Grade: A, Active: true" },
+            { title: "Lesson 3: String Operations", code: "String firstName = \"Aishah\";\nString lastName = \"Developer\";\nString fullName = firstName + \" \" + lastName;\nSystem.out.println(fullName.length());", output: "Aishah Developer\n16" }
           ]
         },
         {
           subjectName: "Control Flow & Conditions",
           lessons: [
-            { title: "Lesson 1: If-Else Statements", code: "int score = 85;\nif (score >= 90) {\n    System.out.println(\"A\");\n} else {\n    System.out.println(\"B\");\n}" },
-            { title: "Lesson 2: Switch Case", code: "int day = 3;\nswitch(day) {\n    case 1: System.out.println(\"Monday\"); break;\n    default: System.out.println(\"Other\");\n}" }
+            { title: "Lesson 1: If-Else Statements", code: "int score = 85;\nif (score >= 90) {\n    System.out.println(\"A\");\n} else {\n    System.out.println(\"B\");\n}", output: "B" },
+            { title: "Lesson 2: Switch Case", code: "int day = 3;\nswitch(day) {\n    case 1: System.out.println(\"Monday\"); break;\n    default: System.out.println(\"Other\");\n}", output: "Other" }
           ]
         },
         {
           subjectName: "Loops - For Loop",
           lessons: [
-            { title: "Lesson 1: Standard For Loop", code: "for(int i = 1; i <= 5; i++) {\n    System.out.println(\"Count: \" + i);\n}" },
-            { title: "Lesson 2: Nested For Loop", code: "for(int i = 1; i <= 3; i++) {\n    for(int j = 1; j <= 3; j++) {\n        System.out.println(i + \",\" + j);\n    }\n}" }
+            { title: "Lesson 1: Standard For Loop", code: "for(int i = 1; i <= 5; i++) {\n    System.out.println(\"Count: \" + i);\n}", output: "Count: 1\nCount: 2\nCount: 3\nCount: 4\nCount: 5" },
+            { title: "Lesson 2: Nested For Loop", code: "for(int i = 1; i <= 3; i++) {\n    for(int j = 1; j <= 3; j++) {\n        System.out.println(i + \",\" + j);\n    }\n}", output: "1,1\n1,2\n1,3\n2,1\n2,2\n2,3\n3,1\n3,2\n3,3" }
           ]
         },
         {
           subjectName: "Loops - While & Do-While",
           lessons: [
-            { title: "Lesson 1: While Loop", code: "int count = 3;\nwhile(count > 0) {\n    System.out.println(count);\n    count--;\n}" },
-            { title: "Lesson 2: Do-While Loop", code: "int x = 1;\ndo {\n    System.out.println(x);\n    x++;\n} while(x <= 3);" }
+            { title: "Lesson 1: While Loop", code: "int count = 3;\nwhile(count > 0) {\n    System.out.println(count);\n    count--;\n}", output: "3\n2\n1" },
+            { title: "Lesson 2: Do-While Loop", code: "int x = 1;\ndo {\n    System.out.println(x);\n    x++;\n} while(x <= 3);", output: "1\n2\n3" }
           ]
         },
         {
           subjectName: "Data Structures - Arrays",
           lessons: [
-            { title: "Lesson 1: 1D Array Declaration", code: "int[] numbers = {10, 20, 30, 40, 50};\nSystem.out.println(numbers[0]);" },
-            { title: "Lesson 2: 2D Matrix Array", code: "int[][] matrix = {\n    {1, 2, 3},\n    {4, 5, 6}\n};\nSystem.out.println(matrix[0][1]);" }
+            { title: "Lesson 1: 1D Array Declaration", code: "int[] numbers = {10, 20, 30, 40, 50};\nSystem.out.println(numbers[0]);", output: "10" },
+            { title: "Lesson 2: 2D Matrix Array", code: "int[][] matrix = {\n    {1, 2, 3},\n    {4, 5, 6}\n};\nSystem.out.println(matrix[0][1]);", output: "2" }
           ]
         },
         {
           subjectName: "Data Structures - ArrayList",
           lessons: [
-            { title: "Lesson 1: ArrayList Add/Get", code: "import java.util.ArrayList;\nArrayList<String> fruits = new ArrayList<>();\nfruits.add(\"Apple\");\nfruits.add(\"Banana\");" },
-            { title: "Lesson 2: ArrayList Remove/Size", code: "import java.util.ArrayList;\nArrayList<Integer> nums = new ArrayList<>();\nnums.add(10);\nnums.remove(0);\nSystem.out.println(nums.size());" }
+            { title: "Lesson 1: ArrayList Add/Get", code: "import java.util.ArrayList;\nArrayList<String> fruits = new ArrayList<>();\nfruits.add(\"Apple\");\nfruits.add(\"Banana\");", output: "[Apple, Banana]" },
+            { title: "Lesson 2: ArrayList Remove/Size", code: "import java.util.ArrayList;\nArrayList<Integer> nums = new ArrayList<>();\nnums.add(10);\nnums.remove(0);\nSystem.out.println(nums.size());", output: "0" }
           ]
         },
         {
           subjectName: "Data Structures - Stacks",
           lessons: [
-            { title: "Lesson 1: Stack Push & Pop", code: "import java.util.Stack;\nStack<String> stack = new Stack<>();\nstack.push(\"First\");\nstack.push(\"Second\");\nstack.pop();" }
+            { title: "Lesson 1: Stack Push & Pop", code: "import java.util.Stack;\nStack<String> stack = new Stack<>();\nstack.push(\"First\");\nstack.push(\"Second\");\nstack.pop();", output: "Popped: Second" }
           ]
         },
         {
           subjectName: "Data Structures - Queues",
           lessons: [
-            { title: "Lesson 1: Queue Add & Poll", code: "import java.util.Queue;\nimport java.util.LinkedList;\nQueue<String> queue = new LinkedList<>();\nqueue.add(\"Task1\");\nqueue.poll();" }
+            { title: "Lesson 1: Queue Add & Poll", code: "import java.util.Queue;\nimport java.util.LinkedList;\nQueue<String> queue = new LinkedList<>();\nqueue.add(\"Task1\");\nqueue.poll();", output: "Polled: Task1" }
           ]
         },
         {
           subjectName: "Data Structures - Linked Lists",
           lessons: [
-            { title: "Lesson 1: LinkedList Operations", code: "import java.util.LinkedList;\nLinkedList<String> list = new LinkedList<>();\nlist.addFirst(\"Start\");\nlist.addLast(\"End\");" }
+            { title: "Lesson 1: LinkedList Operations", code: "import java.util.LinkedList;\nLinkedList<String> list = new LinkedList<>();\nlist.addFirst(\"Start\");\nlist.addLast(\"End\");", output: "LinkedList size: 2" }
           ]
         },
         {
           subjectName: "Data Structures - Binary Trees",
           lessons: [
-            { title: "Lesson 1: Node Structure", code: "class Node {\n    int val;\n    Node left, right;\n    Node(int item) {\n        val = item;\n        left = right = null;\n    }\n}" }
+            { title: "Lesson 1: Node Structure", code: "class Node {\n    int val;\n    Node left, right;\n    Node(int item) {\n        val = item;\n        left = right = null;\n    }\n}", output: "Tree Node Initialized Successfully." }
           ]
         },
         {
           subjectName: "Object-Oriented Programming (OOP)",
           lessons: [
-            { title: "Lesson 1: Class & Object", code: "class Car {\n    String model;\n    int year;\n}\nCar myCar = new Car();" },
-            { title: "Lesson 2: Inheritance", code: "class Animal {\n    void eat() { System.out.println(\"Eating\"); }\n}\nclass Dog extends Animal {}" }
+            { title: "Lesson 1: Class & Object", code: "class Car {\n    String model;\n    int year;\n}\nCar myCar = new Car();", output: "Object Car created successfully." },
+            { title: "Lesson 2: Inheritance", code: "class Animal {\n    void eat() { System.out.println(\"Eating\"); }\n}\nclass Dog extends Animal {}", output: "Dog inherits Animal behavior." }
           ]
         }
       ],
@@ -537,34 +637,34 @@
         {
           subjectName: "Basics & Variables",
           lessons: [
-            { title: "Lesson 1: Console Log", code: "console.log('Welcome to Coding Time');\nlet appName = 'CodeJS';" },
-            { title: "Lesson 2: Const and Let", code: "const API_KEY = 'xyz123';\nlet count = 10;\ncount++;" }
+            { title: "Lesson 1: Console Log", code: "console.log('Welcome to Coding Time');\nlet appName = 'CodeJS';", output: "Welcome to Coding Time" },
+            { title: "Lesson 2: Const and Let", code: "const API_KEY = 'xyz123';\nlet count = 10;\ncount++;", output: "count value: 11" }
           ]
         },
         {
           subjectName: "Functions",
           lessons: [
-            { title: "Lesson 1: Standard Functions", code: "function calculateSum(a, b) {\n    return a + b;\n}" },
-            { title: "Lesson 2: Arrow Functions", code: "const multiply = (x, y) => x * y;\nconsole.log(multiply(4, 5));" }
+            { title: "Lesson 1: Standard Functions", code: "function calculateSum(a, b) {\n    return a + b;\n}", output: "Sum function ready." },
+            { title: "Lesson 2: Arrow Functions", code: "const multiply = (x, y) => x * y;\nconsole.log(multiply(4, 5));", output: "20" }
           ]
         },
         {
           subjectName: "Arrays",
           lessons: [
-            { title: "Lesson 1: Array Methods", code: "const colors = ['red', 'green', 'blue'];\ncolors.push('yellow');\ncolors.forEach(c => console.log(c));" }
+            { title: "Lesson 1: Array Methods", code: "const colors = ['red', 'green', 'blue'];\ncolors.push('yellow');\ncolors.forEach(c => console.log(c));", output: "red\ngreen\nblue\nyellow" }
           ]
         },
         {
           subjectName: "Objects",
           lessons: [
-            { title: "Lesson 1: Object Literals", code: "const user = {\n    name: 'Aishah',\n    role: 'Developer',\n    active: true\n};" }
+            { title: "Lesson 1: Object Literals", code: "const user = {\n    name: 'Aishah',\n    role: 'Developer',\n    active: true\n};", output: "{ name: 'Aishah', role: 'Developer', active: true }" }
           ]
         },
         {
           subjectName: "DOM Manipulation",
           lessons: [
-            { title: "Lesson 1: Query Selector", code: "const btn = document.querySelector('#submit-btn');\nbtn.style.backgroundColor = 'blue';" },
-            { title: "Lesson 2: Event Listeners", code: "document.addEventListener('click', (e) => {\n    console.log('Clicked at:', e.clientX);\n});" }
+            { title: "Lesson 1: Query Selector", code: "const btn = document.querySelector('#submit-btn');\nbtn.style.backgroundColor = 'blue';", output: "Style applied successfully." },
+            { title: "Lesson 2: Event Listeners", code: "document.addEventListener('click', (e) => {\n    console.log('Clicked at:', e.clientX);\n});", output: "Event listener attached." }
           ]
         }
       ],
@@ -572,22 +672,22 @@
         {
           subjectName: "Basics & IO",
           lessons: [
-            { title: "Lesson 1: Print & Variables", code: "name = \"Aishah\"\nscore = 98.5\nprint(f\"User: {name}, Score: {score}\")" },
-            { title: "Lesson 2: If-Else Statements", code: "age = 20\nif age >= 18:\n    print(\"Adult\")\nelse:\n    print(\"Minor\")" }
+            { title: "Lesson 1: Print & Variables", code: "name = \"Aishah\"\nscore = 98.5\nprint(f\"User: {name}, Score: {score}\")", output: "User: Aishah, Score: 98.5" },
+            { title: "Lesson 2: If-Else Statements", code: "age = 20\nif age >= 18:\n    print(\"Adult\")\nelse:\n    print(\"Minor\")", output: "Adult" }
           ]
         },
         {
           subjectName: "Loops",
           lessons: [
-            { title: "Lesson 1: For Loop Range", code: "for i in range(1, 6):\n    print(f\"Number: {i}\")" },
-            { title: "Lesson 2: While Loop", code: "x = 5\nwhile x > 0:\n    print(x)\n    x -= 1" }
+            { title: "Lesson 1: For Loop Range", code: "for i in range(1, 6):\n    print(f\"Number: {i}\")", output: "Number: 1\nNumber: 2\nNumber: 3\nNumber: 4\nNumber: 5" },
+            { title: "Lesson 2: While Loop", code: "x = 5\nwhile x > 0:\n    print(x)\n    x -= 1", output: "5\n4\n3\n2\n1" }
           ]
         },
         {
           subjectName: "Functions & Algorithms",
           lessons: [
-            { title: "Lesson 1: Def Functions", code: "def calculate_gpa(grades):\n    return sum(grades) / len(grades)" },
-            { title: "Lesson 2: Binary Search", code: "def binary_search(arr, target):\n    low, high = 0, len(arr) - 1\n    while low <= high:\n        mid = (low + high) // 2\n        if arr[mid] == target: return mid" }
+            { title: "Lesson 1: Def Functions", code: "def calculate_gpa(grades):\n    return sum(grades) / len(grades)", output: "GPA function defined." },
+            { title: "Lesson 2: Binary Search", code: "def binary_search(arr, target):\n    low, high = 0, len(arr) - 1\n    while low <= high:\n        mid = (low + high) // 2\n        if arr[mid] == target: return mid", output: "Binary Search algorithm ready." }
           ]
         }
       ],
@@ -595,21 +695,70 @@
         {
           subjectName: "Basics & IO",
           lessons: [
-            { title: "Lesson 1: Hello World", code: "#include <iostream>\nusing namespace std;\nint main() {\n    cout << \"Hello C++ World\" << endl;\n    return 0;\n}" },
-            { title: "Lesson 2: Cin & Cout", code: "#include <iostream>\nusing namespace std;\nint main() {\n    int age;\n    cin >> age;\n    cout << \"Age: \" << age;\n}" }
+            { title: "Lesson 1: Hello World", code: "#include <iostream>\nusing namespace std;\nint main() {\n    cout << \"Hello C++ World\" << endl;\n    return 0;\n}", output: "Hello C++ World" },
+            { title: "Lesson 2: Cin & Cout", code: "#include <iostream>\nusing namespace std;\nint main() {\n    int age;\n    cin >> age;\n    cout << \"Age: \" << age;\n}", output: "Age input processed successfully." }
           ]
         },
         {
           subjectName: "Control Structures",
           lessons: [
-            { title: "Lesson 1: If-Else", code: "#include <iostream>\nusing namespace std;\nint main() {\n    int x = 10;\n    if(x > 5) cout << \"Greater\";\n}" },
-            { title: "Lesson 2: For Loop", code: "#include <iostream>\nusing namespace std;\nint main() {\n    for(int i=0; i<5; i++) cout << i;\n}" }
+            { title: "Lesson 1: If-Else", code: "#include <iostream>\nusing namespace std;\nint main() {\n    int x = 10;\n    if(x > 5) cout << \"Greater\";\n}", output: "Greater" },
+            { title: "Lesson 2: For Loop", code: "#include <iostream>\nusing namespace std;\nint main() {\n    for(int i=0; i<5; i++) cout << i;\n}", output: "01234" }
           ]
         },
         {
           subjectName: "Pointers & Arrays",
           lessons: [
-            { title: "Lesson 1: Pointers Basics", code: "#include <iostream>\nusing namespace std;\nint main() {\n    int val = 20;\n    int* ptr = &val;\n    cout << *ptr;\n}" }
+            { title: "Lesson 1: Pointers Basics", code: "#include <iostream>\nusing namespace std;\nint main() {\n    int val = 20;\n    int* ptr = &val;\n    cout << *ptr;\n}", output: "20" }
+          ]
+        }
+      ],
+      Go: [
+        {
+          subjectName: "Go Fundamentals",
+          lessons: [
+            { title: "Lesson 1: Hello Go", code: "package main\nimport \"fmt\"\nfunc main() {\n    fmt.Println(\"Hello, Go!\")\n}", output: "Hello, Go!" },
+            { title: "Lesson 2: Variables & Short Dec", code: "name := \"Aishah\"\nage := 22\nfmt.Printf(\"%s is %d years old\\n\", name, age)", output: "Aishah is 22 years old" }
+          ]
+        },
+        {
+          subjectName: "Concurrency & Structs",
+          lessons: [
+            { title: "Lesson 1: Structs Declaration", code: "type Server struct {\n    Port int\n    Host string\n}\ns := Server{Port: 8080, Host: \"localhost\"}", output: "Server initialized on localhost:8080" },
+            { title: "Lesson 2: Goroutines Basics", code: "go func() {\n    fmt.Println(\"Running in Goroutine\")\n}()", output: "Running in Goroutine" }
+          ]
+        }
+      ],
+      Bash: [
+        {
+          subjectName: "Shell Scripting Basics",
+          lessons: [
+            { title: "Lesson 1: Echo & Variables", code: "#!/bin/bash\nNAME=\"Aishah\"\necho \"Welcome $NAME to DevOps\"", output: "Welcome Aishah to DevOps" },
+            { title: "Lesson 2: Conditionals", code: "FILE=\"/tmp/log.txt\"\nif [ -f \"$FILE\" ]; then\n    echo \"File exists\"\nfi", output: "File exists" }
+          ]
+        },
+        {
+          subjectName: "Automation & Loops",
+          lessons: [
+            { title: "Lesson 1: For Loop Files", code: "for file in *.txt; do\n    echo \"Processing $file\"\ndone", output: "Processing file1.txt\nProcessing file2.txt" }
+          ]
+        }
+      ],
+      YAML: [
+        {
+          subjectName: "Data Serialization",
+          lessons: [
+            { title: "Lesson 1: Key-Value & Arrays", code: "version: '3.8'\nservices:\n  web:\n    image: nginx:latest\n    ports:\n      - \"80:80\"", output: "YAML Configuration Parsed Successfully." },
+            { title: "Lesson 2: Kubernetes Pod Spec", code: "apiVersion: v1\nkind: Pod\nmetadata:\n  name: app-pod\nspec:\n  containers:\n  - name: app\n    image: node:18", output: "Pod Manifest Validated." }
+          ]
+        }
+      ],
+      SQL: [
+        {
+          subjectName: "Database Queries & DDL",
+          lessons: [
+            { title: "Lesson 1: Select Statements", code: "SELECT id, username, email\nFROM users\nWHERE status = 'ACTIVE'\nORDER BY created_at DESC;", output: "Query OK (3 rows returned)" },
+            { title: "Lesson 2: Joins & Aggregations", code: "SELECT u.name, COUNT(o.id) as total_orders\nFROM users u\nJOIN orders o ON u.id = o.user_id\nGROUP BY u.name;", output: "+--------+--------------+\n| name   | total_orders |\n+--------+--------------+\n| Aishah |           12 |\n+--------+--------------+" }
           ]
         }
       ]
@@ -622,11 +771,13 @@
     let userName = "Aishah";
 
     let currentSnippet = "";
+    let currentOutputText = "";
     let startTime = null;
     let timerInterval = null;
     let totalTyped = 0;
     let errorsCount = 0;
     let lastTypedLength = 0;
+    let isLessonFinished = false;
 
     const hiddenInput = document.getElementById("hidden-input");
     const codeDisplay = document.getElementById("code-display");
@@ -662,7 +813,7 @@
       const grid = document.getElementById("language-grid");
       grid.innerHTML = "";
       
-      const orderedLangs = ["Java", "JavaScript", "Python", "C++"];
+      const orderedLangs = ["Java", "JavaScript", "Python", "C++", "Go", "Bash", "YAML", "SQL"];
       
       orderedLangs.forEach(lang => {
         if (!database[lang]) return;
@@ -729,8 +880,18 @@
       currentLessonIndex = lIdx;
       const lesson = database[currentLang][sIdx].lessons[lIdx];
       currentSnippet = lesson.code;
+      currentOutputText = lesson.output;
       
       document.getElementById("lesson-title-header").innerText = lesson.title;
+      
+      isLessonFinished = false;
+      const outBtn = document.getElementById("output-btn");
+      outBtn.className = "btn-output-action";
+      outBtn.innerText = "Output (Complete Lesson First)";
+      document.getElementById("next-lesson-btn").style.display = "none";
+      document.getElementById("output-drawer").classList.remove("open");
+      document.getElementById("output-text").innerText = "Complete the code typing to unlock output.";
+
       showScreen("typing-screen");
       resetTest();
     }
@@ -762,15 +923,15 @@
 
         if (typedChar == null) {
           if (i === typed.length) {
-            html += `<span class="char-current">${char === '\n' ? '↵\n' : char}</span>`;
+            html += `<span class="char-current">${char === '\n' ? '↵\n' : (char === ' ' ? '&nbsp;' : char)}</span>`;
           } else {
-            html += `<span>${char}</span>`;
+            html += `<span>${char === ' ' ? '&nbsp;' : char}</span>`;
           }
         } else if (typedChar === char) {
-          html += `<span class="char-correct">${char}</span>`;
+          html += `<span class="char-correct">${char === ' ' ? '&nbsp;' : char}</span>`;
         } else {
           currentErrors++;
-          html += `<span class="char-incorrect">${char}</span>`;
+          html += `<span class="char-incorrect">${char === ' ' ? '&nbsp;' : char}</span>`;
         }
       }
 
@@ -799,18 +960,39 @@
 
       renderCode();
 
-      if (hiddenInput.value.length >= currentSnippet.length) {
+      if (hiddenInput.value.length >= currentSnippet.length && !isLessonFinished) {
         clearInterval(timerInterval);
         updateStats();
-        finishLesson();
+        
+        isLessonFinished = true;
+        const outBtn = document.getElementById("output-btn");
+        outBtn.className = "btn-output-action ready";
+        outBtn.innerText = "⚡ View Output";
+        document.getElementById("output-text").innerText = currentOutputText;
+
+        document.getElementById("next-lesson-btn").style.display = "block";
       }
     }
 
+    /* SMART TAB HANDLER */
     function handleKeyDown(e) {
       if (e.key === "Tab") {
         e.preventDefault();
-        hiddenInput.value += "    ";
-        handleInput();
+        const curLen = hiddenInput.value.length;
+        let spacesToAdd = "";
+        
+        for (let i = curLen; i < currentSnippet.length; i++) {
+          if (currentSnippet[i] === ' ') {
+            spacesToAdd += ' ';
+          } else {
+            break;
+          }
+        }
+
+        if (spacesToAdd.length > 0) {
+          hiddenInput.value += spacesToAdd;
+          handleInput();
+        }
       }
     }
 
@@ -828,6 +1010,15 @@
       document.getElementById("acc-val").innerText = `${accuracy}%`;
     }
 
+    function toggleOutput() {
+      if (!isLessonFinished) {
+        alert("Please complete typing the lesson first to view the output!");
+        return;
+      }
+      const drawer = document.getElementById("output-drawer");
+      drawer.classList.toggle("open");
+    }
+
     function finishLesson() {
       if (!completedLessons[currentLang][currentSubjectIndex].includes(currentLessonIndex)) {
         completedLessons[currentLang][currentSubjectIndex].push(currentLessonIndex);
@@ -843,9 +1034,24 @@
       document.getElementById("progress-fill").style.width = `${pct}%`;
 
       showScreen("complete-screen");
+      window.addEventListener('keydown', handleGlobalShortcuts, { once: true });
+    }
+
+    function handleGlobalShortcuts(e) {
+      const isCompleteScreen = document.getElementById("complete-screen").classList.contains("active");
+      if (e.ctrlKey && e.key === 's' && isCompleteScreen) {
+        e.preventDefault();
+        const commitBtn = document.getElementById("commit-btn");
+        commitBtn.style.transform = "scale(0.95)";
+        commitBtn.style.border = `2px solid var(--accent-color)`;
+        setTimeout(() => {
+          commitBtn.click();
+        }, 150);
+      }
     }
 
     function nextLesson() {
+      window.removeEventListener('keydown', handleGlobalShortcuts);
       const subject = database[currentLang][currentSubjectIndex];
       if (currentLessonIndex + 1 < subject.lessons.length) {
         startLesson(currentSubjectIndex, currentLessonIndex + 1);
