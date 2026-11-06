@@ -1117,22 +1117,48 @@ const firebaseConfig = {
   }
 };
 
-  // متابعة حالة المستخدم وتحديث الواجهة
-  onAuthStateChanged(auth, (user) => {
+// متابعة حالة المستخدم وحفظ/استرجاع التقدم من Firestore
+  onAuthStateChanged(auth, async (user) => {
     const userContainer = document.getElementById('user-profile');
     if (userContainer) {
       if (user) {
         userContainer.innerHTML = `
-          <span>أهلاً، ${user.displayName}</span>
+          <span>أهلاً ${user.displayName}</span>
           <button onclick="logout()">تسجيل الخروج</button>
         `;
+        
+        // جلب أو إنشاء سجل المستخدم في قاعدة البيانات
+        const userRef = doc(db, "users", user.uid);
+        const docSnap = await getDoc(userRef);
+
+        if (docSnap.exists()) {
+          console.log("التقدم المحفوظ للمستخدم:", docSnap.data());
+        } else {
+          await setDoc(userRef, {
+            name: user.displayName,
+            email: user.email,
+            lastLesson: 0,
+            createdAt: new Date()
+          }, { merge: true });
+        }
+
       } else {
         userContainer.innerHTML = `
-          <button onclick="loginWithGoogle()">تسجيل الدخول باستخدام Google 🚀</button>
+          <button onclick="loginWithGoogle()">تسجيل الدخول باستخدام Google</button>
         `;
       }
     }
   });
+
+  // دالة حفظ التقدم لاستدعائها عند إتمام أي درس
+  window.saveProgress = async function(lessonIndex) {
+    const user = auth.currentUser;
+    if (user) {
+      const userRef = doc(db, "users", user.uid);
+      await setDoc(userRef, { lastLesson: lessonIndex }, { merge: true });
+      console.log("تم حفظ التقدم بنجاح!");
+    }
+  };
 </script>
   
   <div id="user-profile" style="margin: 20px auto; text-align: center;"></div>
