@@ -1106,6 +1106,10 @@
   window.logout = async () => {
     await signOut(auth);
   };
+  window.loginWithGoogle = async () => {
+  const provider = new GoogleAuthProvider();
+  await signInWithPopup(auth, provider);
+};
 
   // متابعة حالة المستخدم وتحديث الواجهة
   onAuthStateChanged(auth, (user) => {
@@ -1124,6 +1128,7 @@
     }
   });
 </script>
+  
   <div id="user-profile" style="margin: 20px auto; text-align: center;"></div>
 </body>
 </html>
