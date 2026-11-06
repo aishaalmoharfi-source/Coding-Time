@@ -1071,5 +1071,62 @@
       if (hiddenInput) hiddenInput.focus();
     }
   </script>
+  <!-- Firebase SDKs -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+  // مفاتيح مشروعك الخاص Coding-Time
+  const firebaseConfig = {
+    apiKey: "AIzaSyBxkNmfniLPxTQ7jmScE9imyNLzOI",
+    authDomain: "coding-time-cad97.firebaseapp.com",
+    projectId: "coding-time-cad97",
+    storageBucket: "coding-time-cad97.firebasestorage.app",
+    messagingSenderId: "721516338687",
+    appId: "1:721516338687:web:6d77beb5fa1542d4"
+  };
+
+  // تهيئة Firebase
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const provider = new GoogleAuthProvider();
+
+  // دالة تسجيل الدخول
+  window.loginWithGoogle = async () => {
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      console.log("تم تسجيل الدخول بنجاح:", user.displayName);
+    } catch (error) {
+      console.error("خطأ أثناء تسجيل الدخول:", error);
+    }
+  };
+
+  // دالة تسجيل الخروج
+  window.logout = async () => {
+    await signOut(auth);
+  };
+
+  // متابعة حالة المستخدم وتحديث الواجهة
+  onAuthStateChanged(auth, (user) => {
+    const userContainer = document.getElementById('user-profile');
+    if (userContainer) {
+      if (user) {
+        userContainer.innerHTML = `
+          <span>أهلاً، ${user.displayName}</span>
+          <button onclick="logout()">تسجيل الخروج</button>
+        `;
+      } else {
+        userContainer.innerHTML = `
+          <button onclick="loginWithGoogle()">تسجيل الدخول باستخدام Google 🚀</button>
+        `;
+      }
+    }
+  });
+</script>
+
+<!-- مكان ظهور زر تسجيل الدخول أو اسم المستخدم -->
+<div id="user-profile"></div>
+
 </body>
 </html>
