@@ -1075,16 +1075,17 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
   import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-
-  // مفاتيح مشروعك الخاص Coding-Time
-  const firebaseConfig = {
-    apiKey: "AIzaSyBxkNmfniLPxTQ7jmScE9imyNLzOI",
-    authDomain: "coding-time-cad97.firebaseapp.com",
-    projectId: "coding-time-cad97",
-    storageBucket: "coding-time-cad97.firebasestorage.app",
-    messagingSenderId: "721516338687",
-    appId: "1:721516338687:web:6d77beb5fa1542d4"
-  };
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyBxkNmfniLPxTQ7jmScE9imyNLzOFVaGvs",
+  authDomain: "coding-time-cad97.firebaseapp.com",
+  projectId: "coding-time-cad97",
+  storageBucket: "coding-time-cad97.firebasestorage.app",
+  messagingSenderId: "721516338687",
+  appId: "1:721516338687:web:6d77beb5fa1542d56c5bca",
+  measurementId: "G-3Z4T1H6E2H"
+};
+ 
 
   // تهيئة Firebase
   const app = initializeApp(firebaseConfig);
