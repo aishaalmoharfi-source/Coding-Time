@@ -1106,10 +1106,10 @@
   window.logout = async () => {
     await signOut(auth);
   };
-  window.loginWithGoogle = async () => {
+ window.loginWithGoogle = async () => {
   try {
-    const provider = new firebase.auth.GoogleAuthProvider();
-    await firebase.auth().signInWithPopup(provider);
+    const provider = new GoogleAuthProvider();
+    await signInWithPopup(auth, provider);
   } catch (error) {
     console.error("خطأ في تسجيل الدخول:", error);
     alert("خطأ: " + error.message);
