@@ -1107,8 +1107,13 @@
     await signOut(auth);
   };
   window.loginWithGoogle = async () => {
-  const provider = new GoogleAuthProvider();
-  await signInWithPopup(auth, provider);
+  try {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    await firebase.auth().signInWithPopup(provider);
+  } catch (error) {
+    console.error("خطأ في تسجيل الدخول:", error);
+    alert("خطأ: " + error.message);
+  }
 };
 
   // متابعة حالة المستخدم وتحديث الواجهة
